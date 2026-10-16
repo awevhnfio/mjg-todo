@@ -131,11 +131,38 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
 .title-input { flex: 1; min-width: 0; font: inherit; font-family: var(--display); font-size: 40px; line-height: 1.1; color: var(--ink); background: var(--accent-soft); border: 0; border-radius: 10px; padding: 2px 8px; }
 .progress { display: flex; align-items: center; gap: 10px; font-size: 17px; color: var(--ink-soft); }
 .bar { flex: 1; height: 10px; border-radius: 6px; background: var(--accent-soft); overflow: hidden; max-width: 180px; }
-.clear-done { flex: none; margin-left: auto; font-size: 15px; color: var(--accent-strong); font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 2px solid var(--accent-soft); background: var(--paper); white-space: nowrap; }
+.clear-done { flex: none; font-size: 15px; color: var(--accent-strong); font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 2px solid var(--accent-soft); background: var(--paper); white-space: nowrap; }
 .clear-done:active { background: var(--accent-soft); }
 .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 6px; transition: width .4s; }
 
-.list { list-style: none; margin: 0; padding: 0; }
+.list { list-style: none; margin: 0; padding: 0; position: relative; }
+.done-tools { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 6px; }
+.hide-done { font-size: 15px; color: var(--ink-soft); font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 2px solid var(--rule); background: var(--paper); white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+.hide-done svg { width: 16px; height: 16px; }
+.hide-done[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); border-color: var(--accent); }
+/* each item: swipe actions sit underneath, the row slides over them */
+.rw { position: relative; overflow: hidden; }
+.rw > .row { background: var(--paper); transition: transform .22s ease; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.rw.swiping > .row { transition: none; }
+.sw-acts { position: absolute; top: 0; right: 0; bottom: 2px; display: flex; }
+.sw-acts button { width: 76px; font-size: 16px; font-weight: 700; color: var(--on-accent); background: var(--accent-strong); display: grid; place-items: center; }
+.sw-acts button.alt { background: var(--ink-soft); color: var(--paper); }
+.sw-hint { position: absolute; top: 0; left: 0; bottom: 2px; width: 120px; display: flex; align-items: center; padding-left: 14px; font-size: 16px; font-weight: 700; color: var(--accent-strong); background: var(--accent-soft); opacity: 0; transition: opacity .15s; }
+.rw.indent-ready .sw-hint { opacity: 1; }
+.rw.lifted { z-index: 6; overflow: visible; }
+.rw.lifted .sw-acts, .rw.lifted .sw-hint { display: none; }
+.rw.lifted > .row { transition: none; box-shadow: 0 10px 24px var(--shadow); border-radius: 10px; background: var(--paper); }
+.rw.lifted-sub > .row { opacity: .55; }
+.drop-line { position: absolute; left: 0; right: 0; height: 4px; margin-top: -2px; border-radius: 3px; background: var(--accent-strong); pointer-events: none; z-index: 7; }
+.drop-line::before { content: ""; position: absolute; left: -6px; top: -4px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent-strong); }
+.drop-line.sub { left: 34px; }
+.stk-pop { position: fixed; z-index: 35; display: flex; gap: 6px; align-items: center; padding: 8px; border-radius: 18px; background: var(--paper); box-shadow: 0 10px 30px var(--shadow); border: 2px solid var(--rule); animation: pop .18s ease-out; max-width: calc(100vw - 24px); flex-wrap: wrap; width: max-content; }
+@keyframes pop { from { transform: scale(.85); opacity: 0; } }
+.stk-pop button { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; background: var(--desk); }
+.stk-pop button img { width: 38px; height: 38px; object-fit: contain; }
+.stk-pop .more-stk { width: auto; padding: 0 10px; font-size: 15px; font-weight: 700; color: var(--accent-strong); background: transparent; }
+.stk-pop-label { width: 100%; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: var(--ink-soft); padding: 0 2px 2px 4px; }
+.stk-pop-label .more-stk { height: 28px; }
 .row {
   position: relative; display: flex; align-items: flex-start; gap: 10px;
   min-height: 52px; padding: 11px 0 9px 0; border-bottom: 2px solid var(--rule);
@@ -250,7 +277,8 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
 .toast button { color: var(--accent); font-weight: 700; }
 
 @media (prefers-reduced-motion: reduce) {
-  .stk.fresh, .sheet { animation: none; }
+  .stk.fresh, .sheet, .stk-pop { animation: none; }
+  .rw > .row { transition: none; }
 }
 </style>
 
@@ -273,7 +301,11 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
         <h1 class="title" id="pageTitle">할 일 목록</h1>
         <button class="title-edit-btn" id="titleEditBtn" aria-label="제목 고치기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>
       </div>
-      <div class="progress"><span id="progressText">할 일 0개</span><span class="bar"><i id="barFill"></i></span><button class="clear-done" id="clearDone" hidden>완료 지우기</button></div>
+      <div class="progress"><span id="progressText">할 일 0개</span><span class="bar"><i id="barFill"></i></span></div>
+      <div class="done-tools" id="doneTools" hidden>
+        <button class="hide-done" id="hideDone" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="hideDoneText">완료 숨기기</span></button>
+        <button class="clear-done" id="clearDone" hidden>완료 지우기</button>
+      </div>
     </div>
     <ul class="list" id="list"></ul>
     <div class="empty" id="empty" hidden>
@@ -390,6 +422,8 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
   </div>
 </div>
 
+<div class="stk-pop" id="stkPop" hidden role="dialog" aria-label="붙일 스티커 고르기"></div>
+
 <div class="toast" id="toast" hidden><span id="toastText"></span><button id="toastAction" hidden>되돌리기</button></div>
 
 <style>
@@ -433,7 +467,6 @@ const BUILTIN = [
   { id: 'star', name: '별', svg: die(`<path d='${STAR}'/>`) + `<path d='${STAR}' fill='#FFD66B' stroke='#E3A73A' stroke-width='3' stroke-linejoin='round'/>` + cuteEyes(55) },
   { id: 'heart', name: '하트', svg: die(`<path d='${HEART}'/>`) + `<path d='${HEART}' fill='#FF9DB3' stroke='#E26C88' stroke-width='3'/><ellipse cx='33' cy='38' rx='6' ry='4' fill='#fff' opacity='.7' transform='rotate(-30 33 38)'/>` },
   { id: 'flower', name: '꽃', svg: die(petals.map(p => `<circle cx='${p[0].toFixed(1)}' cy='${p[1].toFixed(1)}' r='17'/>`).join('')) + petals.map(p => `<circle cx='${p[0].toFixed(1)}' cy='${p[1].toFixed(1)}' r='17' fill='#FFC2D1' stroke='#E88AA3' stroke-width='2.6'/>`).join('') + `<circle cx='50' cy='50' r='13' fill='#FFE08A' stroke='#E3B23F' stroke-width='2.6'/>` },
-  { id: 'stamp', name: '참잘', svg: die(`<circle cx='50' cy='50' r='40'/>`) + `<circle cx='50' cy='50' r='40' fill='#FFF6F4'/><circle cx='50' cy='50' r='36' fill='none' stroke='#E5505E' stroke-width='4'/><circle cx='50' cy='50' r='30' fill='none' stroke='#E5505E' stroke-width='1.6' stroke-dasharray='3 3'/><text x='50' y='46' text-anchor='middle' font-family='Apple SD Gothic Neo, Malgun Gothic, sans-serif' font-weight='800' font-size='17' fill='#E5505E'>참 잘</text><text x='50' y='66' text-anchor='middle' font-family='Apple SD Gothic Neo, Malgun Gothic, sans-serif' font-weight='800' font-size='17' fill='#E5505E'>했어요</text>` },
   { id: 'onigiri', name: '주먹밥', svg: die(`<path d='${ONIGIRI}'/>`) + `<path d='${ONIGIRI}' fill='#fff' stroke='#6B5B5F' stroke-width='3'/><rect x='35' y='63' width='30' height='24' rx='3' fill='#36443A'/>` + cuteEyes(48) },
   { id: 'clover', name: '클로버', svg: die(`<circle cx='38' cy='38' r='15'/><circle cx='62' cy='38' r='15'/><circle cx='38' cy='62' r='15'/><circle cx='62' cy='62' r='15'/>`) + `<path d='M58 60 Q68 76 78 84' fill='none' stroke='#5FA352' stroke-width='4' stroke-linecap='round'/>` + [[38, 38], [62, 38], [38, 62], [62, 62]].map(p => `<circle cx='${p[0]}' cy='${p[1]}' r='15' fill='#A5DD94' stroke='#5FA352' stroke-width='2.6'/>`).join('') + `<circle cx='50' cy='50' r='5' fill='#7CC46B'/>` },
   { id: 'ribbon', name: '리본', svg: die(`<path d='M50 48 C36 26 12 28 15 46 C18 64 38 60 50 50Z'/><path d='M50 48 C64 26 88 28 85 46 C82 64 62 60 50 50Z'/><path d='M46 52 L34 84 L44 79 L49 86 L54 54Z'/>`) + `<path d='M46 52 L34 84 L44 79 L49 86 L54 54Z' fill='#F48FAE' stroke='#D7678A' stroke-width='2.6' stroke-linejoin='round'/><path d='M50 48 C36 26 12 28 15 46 C18 64 38 60 50 50Z' fill='#FFB3C7' stroke='#D7678A' stroke-width='2.6'/><path d='M50 48 C64 26 88 28 85 46 C82 64 62 60 50 50Z' fill='#FFB3C7' stroke='#D7678A' stroke-width='2.6'/><circle cx='50' cy='49' r='8' fill='#F48FAE' stroke='#D7678A' stroke-width='2.6'/>` },
@@ -616,7 +649,29 @@ function pickSticker() {
   if (sel && sel !== 'random' && (sel.startsWith('b:') ? BUILTIN_MAP[sel.slice(2)] : docs[sel.slice(2)])) return sel;
   const refs = allRefs(); return refs[Math.floor(Math.random() * refs.length)];
 }
+function validRef(ref) { return !!ref && (ref.startsWith('b:') ? !!BUILTIN_MAP[ref.slice(2)] : !!(docs[ref.slice(2)] && docs[ref.slice(2)].src)); }
+function recentStickers() {
+  const r = (settings().recent || []).filter(validRef);
+  for (const d of ['b:star', 'b:heart', 'b:flower', 'b:clover', 'b:spark']) if (r.length < 5 && !r.includes(d)) r.push(d);
+  return r.slice(0, 5);
+}
+function noteRecent(ref) {
+  const r = [ref, ...(settings().recent || []).filter(x => x !== ref && validRef(x))].slice(0, 8);
+  setSettings({ recent: r });
+}
+function stickOn(it, ref) {
+  it.done = true; it.stk = ref;
+  it.rot = Math.round(Math.random() * 36 - 18);
+  it.dx = Math.round(Math.random() * 10 - 6);
+}
 function page() { return docs[cur()]; }
+const lingering = new Set(); // just-finished items stay visible a moment before "hide done" tucks them away
+function hideDoneOn() { const p = page(); return !!(p && p.hideDone); }
+function isHidden(r) {
+  if (!r.it.done || lingering.has(r.it.id)) return false;
+  return r.sub || !(r.it.sub || []).some(x => !x.done);
+}
+function visibleRows(p) { const rows = flat(p); return (p && p.hideDone) ? rows.filter(r => !isHidden(r)) : rows; }
 function flat(p) {
   const out = [];
   (p ? p.items : []).forEach(it => { out.push({ it, sub: false }); (it.sub || []).forEach(s => out.push({ it: s, sub: true, parent: it })); });
@@ -657,9 +712,13 @@ function applySkin() {
   document.querySelectorAll('.theme-card').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.skin === s)));
 }
 function renderHead() {
-  const cn = clearable(page());
+  const cn = clearable(page()), all = flat(page()), anyDone = all.some(r => r.it.done);
+  const hiddenN = hideDoneOn() ? all.filter(isHidden).length : 0;
+  $('doneTools').hidden = !anyDone && !hideDoneOn();
   $('clearDone').hidden = !cn;
   $('clearDone').textContent = `완료 ${cn}개 지우기`;
+  $('hideDone').setAttribute('aria-pressed', String(hideDoneOn()));
+  $('hideDoneText').textContent = hideDoneOn() ? (hiddenN ? `완료 ${hiddenN}개 보이기` : '완료 보이기') : '완료 숨기기';
   const visible = visibleIds().length;
   $('nbChipText').textContent = visible > 1 ? `내 수첩 ${visible}권` : '내 수첩';
   $('pageTitle').textContent = listTitle();
@@ -668,16 +727,17 @@ function renderHead() {
   $('barFill').style.width = rows.length ? (done / rows.length * 100) + '%' : '0';
 }
 function renderList() {
-  const rows = flat(page());
+  const rows = visibleRows(page());
   if (draft && draft.parent && !locate(page(), draft.parent)) draft = { parent: null, after: null };
   const html = rows.map(({ it, sub }) => {
     const subs = !sub && it.sub && it.sub.length ? it.sub : null;
     const cnt = subs ? `<span class="count">${subs.filter(s => s.done).length}/${subs.length}</span>` : '';
     const stk = it.done ? `<button class="stk${it.id === freshId ? ' fresh' : ''}" data-a="peel" style="--rot:${it.rot || 0}deg;--dx:${it.dx || 0}px" aria-label="스티커 떼기"><img alt="" src="${esc(stickerSrc(it.stk))}"></button>` : '';
-    return `<li class="row${sub ? ' sub' : ''}${it.done ? ' done' : ''} has-more" data-id="${it.id}">
-      <button class="check" data-a="toggle" aria-label="${it.done ? '완료 취소' : '완료하고 스티커 붙이기'}" aria-pressed="${!!it.done}">${CHECK_SVG}</button>
+    const acts = (sub ? `<button class="alt" data-sw="outdent">꺼내기</button>` : '') + `<button data-sw="delete">지우기</button>`;
+    return `<li class="rw" data-rid="${it.id}" data-level="${sub ? 'sub' : 'top'}"><span class="sw-hint" aria-hidden="true">→ 하위로</span><span class="sw-acts">${acts}</span><div class="row${sub ? ' sub' : ''}${it.done ? ' done' : ''} has-more" data-id="${it.id}">
+      <button class="check" data-a="toggle" aria-label="${it.done ? '완료 취소' : '완료하고 스티커 붙이기 (길게 누르면 스티커 고르기)'}" aria-pressed="${!!it.done}">${CHECK_SVG}</button>
       <div class="text" data-a="edit">${esc(it.text)}</div>${cnt}
-      <button class="more" data-a="more" aria-label="메뉴">${MORE_SVG}</button>${stk}</li>`;
+      <button class="more" data-a="more" aria-label="메뉴">${MORE_SVG}</button>${stk}</div></li>`;
   });
   if (draft) {
     const sub = !!draft.parent, anchor = draft.after || draft.parent;
@@ -691,7 +751,7 @@ function renderList() {
   }
   $('list').innerHTML = html.join('');
   freshId = null;
-  $('empty').hidden = rows.length > 0 || !!draft;
+  $('empty').hidden = flat(page()).length > 0 || !!draft;
   const blanks = Math.max(3, 7 - rows.length - (draft ? 1 : 0));
   $('blanks').innerHTML = (draft ? '' : '<div class="blank add"><span class="plus">+</span>새로운 할 일</div>') + '<div class="blank"></div>'.repeat(draft ? blanks : blanks - 1);
 }
@@ -711,7 +771,8 @@ function renderStickerGrid() {
   $('editStickers').textContent = stickerEdit ? '다 했어요' : '정리하기';
 }
 function render() {
-  if (editing) { renderQueued = true; return; }
+  if (editing || drag || (g && g.mode === 'swipe')) { renderQueued = true; if (!editing) setTimeout(render, 300); return; }
+  swOpen = null;
   applySkin(); renderHead(); renderList(); renderPick();
   if (!$('stickerSheet').hidden) renderStickerGrid();
   if (!$('nbSheet').hidden) renderNotebooks();
@@ -759,21 +820,33 @@ function commitDraft(input, keepGoing) {
 }
 function toggle(id) {
   let nowDone = false;
+  const l0 = locate(page(), id);
+  if (l0 && !l0.item.done && hideDoneOn()) lingering.add(id);
   mutate(p => {
     const loc = locate(p, id); if (!loc) return;
     const it = loc.item;
     if (it.done) { it.done = false; delete it.stk; delete it.rot; delete it.dx; }
-    else {
-      it.done = true; it.stk = pickSticker();
-      it.rot = Math.round(Math.random() * 36 - 18);
-      it.dx = Math.round(Math.random() * 10 - 6);
-      nowDone = true; freshId = id;
-    }
+    else { stickOn(it, pickSticker()); nowDone = true; freshId = id; }
   });
-  if (nowDone) {
-    const rows = flat(page());
-    if (rows.length > 1 && rows.every(r => r.it.done)) toast('할 일을 다 끝냈어요! 대단해요');
-  }
+  if (nowDone) afterStick(id);
+}
+// Put a chosen sticker on an item (done or not) — from the long-press picker.
+function stickWith(id, ref) {
+  if (hideDoneOn()) lingering.add(id);
+  const real = ref === 'random' ? (() => { const a = allRefs(); return a[Math.floor(Math.random() * a.length)]; })() : ref;
+  mutate(p => { const l = locate(p, id); if (l) { stickOn(l.item, real); freshId = id; } });
+  noteRecent(real);
+  afterStick(id);
+}
+function afterStick(id) {
+  if (lingering.has(id)) setTimeout(() => { lingering.delete(id); render(); }, 1100);
+  const rows = flat(page());
+  if (rows.length > 1 && rows.every(r => r.it.done)) toast('할 일을 다 끝냈어요! 대단해요');
+}
+function toggleHideDone() {
+  const on = !hideDoneOn();
+  mutate(p => { p.hideDone = on; });
+  if (on) { const n = flat(page()).filter(isHidden).length; if (n) toast(`완료한 할 일 ${n}개를 숨겼어요`); }
 }
 function startEdit(row) {
   const id = row.dataset.id, loc = locate(page(), id); if (!loc) return;
@@ -850,6 +923,182 @@ function doAction(act, id) {
   closeSheets();
 }
 
+/* ---------- touch gestures on rows ----------
+   long-press a row      → lift it and drag to a new place (a drop line shows where)
+   long-press the circle → small sticker picker (recent stickers)
+   swipe right           → make it a sub-item of the item above
+   swipe left            → reveal 꺼내기 / 지우기 */
+const LONG_MS = 420, SW_W = 76;
+let g = null, swOpen = null, pickFor = null, eatUntil = 0, eatOnUp = false;
+// iOS may or may not send a click after a long press, so swallow clicks only briefly
+function eatSoon() { eatUntil = Date.now() + 450; }
+document.addEventListener('pointerup', () => { if (eatOnUp) { eatOnUp = false; eatSoon(); } }, true);
+function rowEls(id) { const li = $('list').querySelector(`.rw[data-rid="${id}"]`); return li ? { li, row: li.querySelector('.row') } : null; }
+function closeSwipe() {
+  if (!swOpen) return;
+  const e = rowEls(swOpen); if (e) e.row.style.transform = '';
+  swOpen = null;
+}
+function canIndent(id) {
+  const l = locate(page(), id);
+  return !!l && !l.parent && l.idx > 0 && !(l.item.sub && l.item.sub.length);
+}
+function gEnd() { if (g && g.timer) clearTimeout(g.timer); g = null; }
+
+$('list').addEventListener('pointerdown', e => {
+  if (e.button > 0 || editing || e.target.closest('input, .sw-acts')) return;
+  const li = e.target.closest('.rw'); if (!li) return;
+  if (swOpen && swOpen !== li.dataset.rid) { closeSwipe(); eatOnUp = true; return; }
+  gEnd();
+  g = { li, row: li.querySelector('.row'), id: li.dataset.rid, sub: li.dataset.level === 'sub', x0: e.clientX, y0: e.clientY, mode: 'pending',
+        onCheck: !!e.target.closest('.check'), pid: e.pointerId, base: swOpen === li.dataset.rid ? -li.querySelectorAll('.sw-acts button').length * SW_W : 0 };
+  g.timer = setTimeout(() => {
+    if (!g || g.mode !== 'pending') return;
+    if (navigator.vibrate) navigator.vibrate(12);
+    if (g.onCheck) { g.mode = 'pop'; eatOnUp = true; openStickerPop(g.id, g.row.querySelector('.check')); gEnd(); }
+    else startDrag(e);
+  }, LONG_MS);
+});
+$('list').addEventListener('pointermove', e => {
+  if (!g || e.pointerId !== g.pid) return;
+  const dx = e.clientX - g.x0, dy = e.clientY - g.y0;
+  if (g.mode === 'pending') {
+    if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy) * 1.3) { clearTimeout(g.timer); g.mode = 'swipe'; g.li.classList.add('swiping'); try { g.row.setPointerCapture(g.pid); } catch (err) { } }
+    else if (Math.hypot(dx, dy) > 10) { gEnd(); return; }
+  }
+  if (g.mode === 'swipe') {
+    const n = g.li.querySelectorAll('.sw-acts button').length * SW_W;
+    const x = Math.max(-n - 24, Math.min(110, g.base + dx));
+    g.row.style.transform = `translateX(${x}px)`;
+    g.li.classList.toggle('indent-ready', x > 70 && canIndent(g.id));
+  } else if (g.mode === 'drag') moveDrag(e);
+});
+function pointerFinish(e, cancelled) {
+  if (!g || e.pointerId !== g.pid) return;
+  if (g.mode === 'swipe') {
+    eatSoon();
+    const n = g.li.querySelectorAll('.sw-acts button').length * SW_W;
+    const x = g.base + (e.clientX - g.x0), id = g.id;
+    g.li.classList.remove('swiping', 'indent-ready');
+    if (!cancelled && x > 70 && canIndent(id)) { g.row.style.transform = ''; swOpen = null; gEnd(); doAction('indent', id); toast('위 항목의 하위로 넣었어요'); return; }
+    if (!cancelled && x < -48) { g.row.style.transform = `translateX(${-n}px)`; swOpen = id; }
+    else { g.row.style.transform = ''; if (swOpen === id) swOpen = null; }
+  } else if (g.mode === 'drag') { endDrag(cancelled); eatSoon(); }
+  gEnd();
+}
+$('list').addEventListener('pointerup', e => pointerFinish(e, false));
+$('list').addEventListener('pointercancel', e => pointerFinish(e, true));
+// keep the page from scrolling while a row is being dragged or swiped
+$('list').addEventListener('touchmove', e => { if (g && (g.mode === 'drag' || g.mode === 'swipe')) e.preventDefault(); }, { passive: false });
+$('list').addEventListener('contextmenu', e => { if (e.target.closest('.rw')) e.preventDefault(); });
+$('list').addEventListener('click', e => {
+  if (Date.now() < eatUntil) { eatUntil = 0; e.stopPropagation(); e.preventDefault(); return; }
+  const sw = e.target.closest('[data-sw]');
+  if (sw) {
+    e.stopPropagation();
+    const id = sw.closest('.rw').dataset.rid; closeSwipe();
+    if (sw.dataset.sw === 'delete') removeItem(id);
+    else if (sw.dataset.sw === 'outdent') { doAction('outdent', id); toast('상위 항목으로 꺼냈어요'); }
+    return;
+  }
+  if (swOpen) { closeSwipe(); e.stopPropagation(); }
+}, true);
+
+let drag = null;
+function startDrag(e) {
+  g.mode = 'drag';
+  const list = $('list');
+  try { g.row.setPointerCapture(g.pid); } catch (err) { }
+  closeSwipe();
+  const all = [...list.querySelectorAll('.rw')];
+  // a top-level item carries its sub-items along
+  const group = [g.li];
+  if (!g.sub) { let n = g.li.nextElementSibling; while (n && n.classList.contains('rw') && n.dataset.level === 'sub') { group.push(n); n = n.nextElementSibling; } }
+  group.forEach((el, i) => el.classList.add(i ? 'lifted-sub' : 'lifted'));
+  group.slice(1).forEach(el => el.classList.add('lifted'));
+  const lr = list.getBoundingClientRect(), top = el => el.getBoundingClientRect().top - lr.top, bot = el => el.getBoundingClientRect().bottom - lr.top;
+  const rest = all.filter(el => !group.includes(el)), slots = [];
+  if (!g.sub) {
+    const tops = rest.filter(el => el.dataset.level === 'top');
+    tops.forEach(el => slots.push({ y: top(el), before: el.dataset.rid }));
+    if (rest.length) slots.push({ y: bot(rest[rest.length - 1]), before: null });
+    else slots.push({ y: 0, before: null });
+  } else {
+    rest.forEach((el, i) => {
+      if (el.dataset.level !== 'top') return;
+      const pid = el.dataset.rid; let j = i + 1;
+      const subs = [];
+      while (j < rest.length && rest[j].dataset.level === 'sub') subs.push(rest[j++]);
+      subs.forEach(sb => slots.push({ y: top(sb), parent: pid, before: sb.dataset.rid }));
+      slots.push({ y: subs.length ? bot(subs[subs.length - 1]) : bot(el), parent: pid, before: null });
+    });
+  }
+  const line = document.createElement('div'); line.className = 'drop-line' + (g.sub ? ' sub' : ''); list.appendChild(line);
+  drag = { group, slots, line, y0: g.y0, sy0: window.scrollY, slot: null, id: g.id, sub: g.sub, lastY: g.y0, raf: 0 };
+  moveDrag(e);
+  const tick = () => {
+    if (!drag) return;
+    const edge = 70, y = drag.lastY;
+    if (y < edge) window.scrollBy(0, -10); else if (y > window.innerHeight - edge) window.scrollBy(0, 10);
+    placeDrag();
+    drag.raf = requestAnimationFrame(tick);
+  };
+  drag.raf = requestAnimationFrame(tick);
+}
+function moveDrag(e) { if (!drag) return; drag.lastY = e.clientY; placeDrag(); }
+function placeDrag() {
+  const d = drag, off = d.lastY - d.y0 + (window.scrollY - d.sy0);
+  d.group.forEach(el => { el.style.transform = `translateY(${off}px)`; });
+  const lr = $('list').getBoundingClientRect(), y = d.lastY - lr.top;
+  let best = null, bd = Infinity;
+  for (const sl of d.slots) { const dd = Math.abs(sl.y - y); if (dd < bd) { bd = dd; best = sl; } }
+  d.slot = best;
+  if (best) d.line.style.top = best.y + 'px';
+}
+function endDrag(cancelled) {
+  const d = drag; drag = null; if (!d) return;
+  cancelAnimationFrame(d.raf);
+  d.line.remove();
+  d.group.forEach(el => { el.style.transform = ''; el.classList.remove('lifted', 'lifted-sub'); });
+  if (cancelled || !d.slot) return;
+  const sl = d.slot;
+  mutate(p => {
+    const l = locate(p, d.id); if (!l) return;
+    const item = l.arr.splice(l.idx, 1)[0];
+    if (!d.sub) {
+      const i = sl.before ? p.items.findIndex(x => x.id === sl.before) : -1;
+      if (i >= 0) p.items.splice(i, 0, item); else p.items.push(item);
+    } else {
+      const par = p.items.find(x => x.id === sl.parent); if (!par) { l.arr.splice(l.idx, 0, item); return; }
+      const arr = (par.sub = par.sub || []);
+      const i = sl.before ? arr.findIndex(x => x.id === sl.before) : -1;
+      if (i >= 0) arr.splice(i, 0, item); else arr.push(item);
+    }
+  });
+}
+
+/* long-press sticker picker */
+function openStickerPop(id, anchor) {
+  const pop = $('stkPop'), l = locate(page(), id); if (!l) return;
+  pickFor = id;
+  const btn = ref => `<button data-pick="${ref}" aria-label="이 스티커 붙이기"><img alt="" src="${esc(ref === 'random' ? RANDOM_URI : stickerSrc(ref))}"></button>`;
+  pop.innerHTML = `<div class="stk-pop-label"><span>${l.item.done ? '스티커 바꾸기' : '이 스티커로 완료'}</span><button class="more-stk" data-pick="more">더 보기 ›</button></div>` + recentStickers().map(btn).join('') + btn('random');
+  pop.hidden = false;
+  const r = anchor.getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let x = Math.min(window.innerWidth - pw - 12, Math.max(12, r.left - 8)), y = r.bottom + 8;
+  if (y + ph > window.innerHeight - 12) y = Math.max(12, r.top - ph - 8);
+  pop.style.left = x + 'px'; pop.style.top = y + 'px';
+}
+function closeStickerPop() { $('stkPop').hidden = true; }
+$('stkPop').addEventListener('click', e => {
+  const b = e.target.closest('[data-pick]'); if (!b || !pickFor) return;
+  const ref = b.dataset.pick;
+  closeStickerPop();
+  if (ref === 'more') { openSheet('stickerSheet'); renderStickerGrid(); $('stickerSheet').dataset.for = pickFor; return; }
+  stickWith(pickFor, ref); pickFor = null;
+});
+document.addEventListener('pointerdown', e => { if (!$('stkPop').hidden && !e.target.closest('#stkPop')) { closeStickerPop(); pickFor = null; } }, true);
+
 /* ---------- sheets & toast ---------- */
 function openSheet(id) {
   closeSheets(true);
@@ -859,6 +1108,7 @@ function closeSheets(keepBackdrop) {
   ['stickerSheet', 'itemSheet', 'exportSheet', 'settingsSheet', 'cutSheet', 'nbSheet'].forEach(s => { $(s).hidden = true; });
   if (!keepBackdrop) $('backdrop').hidden = true;
   stickerEdit = false;
+  delete $('stickerSheet').dataset.for;
 }
 function openItemSheet(id) {
   const l = locate(page(), id); if (!l) return;
@@ -1103,7 +1353,7 @@ function wrapText(ctx, text, maxW) {
 }
 const HF = '"Ownglyph haewonny", Gaegu, sans-serif';
 async function exportImage() {
-  const rows = flat(page());
+  const rows = visibleRows(page());
   if (!rows.length) { toast('먼저 할 일을 적어 주세요'); return; }
   const skinKey = settings().skin === 'hachi' ? 'hachi' : 'chiikawa', K = SKINS[skinKey];
   const titleText = listTitle();
@@ -1240,6 +1490,7 @@ $('itemActions').addEventListener('click', e => {
 $('pageTitle').addEventListener('click', startTitleEdit);
 $('titleEditBtn').addEventListener('click', startTitleEdit);
 $('clearDone').addEventListener('click', clearDone);
+$('hideDone').addEventListener('click', toggleHideDone);
 $('nbChip').addEventListener('click', () => { nbConfirm = null; renderNotebooks(); openSheet('nbSheet'); });
 $('nbList').addEventListener('click', e => {
   const del = e.target.closest('[data-nbdel]');
@@ -1256,12 +1507,16 @@ $('nbAdd').addEventListener('click', () => { newNotebook(); closeSheets(); start
 $('settingsBtn').addEventListener('click', () => openSheet('settingsSheet'));
 document.querySelectorAll('.theme-card').forEach(b => b.addEventListener('click', () => { setSettings({ skin: b.dataset.skin }); render(); }));
 
-$('pickBtn').addEventListener('click', () => { openSheet('stickerSheet'); renderStickerGrid(); });
+$('pickBtn').addEventListener('click', () => { openSheet('stickerSheet'); delete $('stickerSheet').dataset.for; renderStickerGrid(); });
 $('stickerSheet').addEventListener('click', e => {
   const del = e.target.closest('[data-del]');
   if (del) { docs[del.dataset.del] = null; touch(del.dataset.del); if (settings().sel === 'c:' + del.dataset.del) setSettings({ sel: 'random' }); render(); return; }
   const t = e.target.closest('.tile[data-ref]');
-  if (t && !stickerEdit) { setSettings({ sel: t.dataset.ref }); renderPick(); closeSheets(); toast(t.dataset.ref === 'random' ? '랜덤 스티커를 붙일게요' : '이 스티커를 붙일게요'); }
+  if (t && !stickerEdit) {
+    const forId = $('stickerSheet').dataset.for;
+    if (forId) { closeSheets(); stickWith(forId, t.dataset.ref); pickFor = null; return; }
+    setSettings({ sel: t.dataset.ref }); renderPick(); closeSheets(); toast(t.dataset.ref === 'random' ? '랜덤 스티커를 붙일게요' : '이 스티커를 붙일게요');
+  }
 });
 $('editStickers').addEventListener('click', () => { stickerEdit = !stickerEdit; renderStickerGrid(); });
 $('fileInput').addEventListener('change', async e => {
@@ -1324,7 +1579,7 @@ $('sampleBtn').addEventListener('click', () => {
   mutate(p => {
     p.items.push(
       { id: uid(), text: '장보기', done: false, sub: [{ id: uid(), text: '우유', done: true, stk: 'b:flower', rot: -9, dx: -2 }, { id: uid(), text: '딸기 한 팩', done: false }] },
-      { id: uid(), text: '방 청소하기', done: true, stk: 'b:stamp', rot: 12, dx: 0 },
+      { id: uid(), text: '방 청소하기', done: true, stk: 'b:spark', rot: 12, dx: 0 },
       { id: uid(), text: '운동 30분', done: false, sub: [{ id: uid(), text: '스트레칭', done: true, stk: 'b:heart', rot: 8, dx: -4 }, { id: uid(), text: '산책', done: false }] },
       { id: uid(), text: '일기 쓰기', done: false }
     );
