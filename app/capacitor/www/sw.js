@@ -1,5 +1,5 @@
 // Cache the app shell so it opens without a connection. Bumped on every build.
-const CACHE = 'mjg-todo-02609f4f97';
+const CACHE = 'mjg-todo-3a5dc7eef0';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

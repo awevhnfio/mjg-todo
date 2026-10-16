@@ -80,6 +80,11 @@
 - 붙은 스티커나 동그라미를 다시 누르면 스티커를 떼고 완료가 취소된다.
 - 모든 항목(2개 이상)을 끝내면 칭찬 토스트가 뜬다.
 
+### 2.4.1 완료한 할 일 지우기
+- 진행률 막대 오른쪽의 **`완료 n개 지우기`** 버튼. 지울 것이 있을 때만 보인다.
+- 지우는 것: 끝낸 하위 항목, 그리고 **안 끝난 하위 항목이 하나도 없는** 끝낸 상위 항목(남은 하위 항목도 같이). 끝낸 상위 항목에 안 끝난 하위 항목이 있으면, 할 일이 사라지지 않도록 상위 항목은 남긴다.
+- 지운 뒤 4.5초 동안 토스트의 `되돌리기`로 되살릴 수 있다. 지금 보는 수첩에만 적용된다.
+
 ### 2.5 스티커 북 · 내 스티커
 - 위쪽 막대의 스티커 버튼 → 스티커 북. 다음에 붙일 스티커를 고른다.
   - **랜덤**: 기본 스티커와 내 스티커 전체에서 매번 하나를 고른다.
@@ -299,7 +304,7 @@
 | 변경 | `mutate(fn)` — 목록을 복사해 고친 뒤 저장 예약하고 다시 그림 |
 | 그리기 | `render()` → `applySkin()`, `renderHead()`, `renderList()`, `renderPick()`, `renderStickerGrid()` |
 | 수첩 | `notebookIds()`, `visibleIds()`, `cur()`, `nbTitle()`, `switchNotebook()`, `newNotebook()`, `deleteNotebook()`, `renderNotebooks()` |
-| 동작 | `openDraft()`, `focusDraft()`, `commitDraft()`, `insertItem()`, `toggle()`, `startEdit()`, `startTitleEdit()`, `removeItem()`, `doAction()` |
+| 동작 | `clearable()`, `clearDone()`, `openDraft()`, `focusDraft()`, `commitDraft()`, `insertItem()`, `toggle()`, `startEdit()`, `startTitleEdit()`, `removeItem()`, `doAction()` |
 | 내 스티커 | `openCutter()`, `autoCut()`, `borderColors()`, `floodClear()`, `dropSpecks()`, `wandAt()`, `brushAt()`, `buildStickerArt()`, `outlineSticker()` |
 | 내보내기 | `exportImage()`, `wrapText()`, `rr()` |
 

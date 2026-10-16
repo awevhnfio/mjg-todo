@@ -117,6 +117,8 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
 .title-input { flex: 1; min-width: 0; font: inherit; font-family: var(--display); font-size: 40px; line-height: 1.1; color: var(--ink); background: var(--accent-soft); border: 0; border-radius: 10px; padding: 2px 8px; }
 .progress { display: flex; align-items: center; gap: 10px; font-size: 17px; color: var(--ink-soft); }
 .bar { flex: 1; height: 10px; border-radius: 6px; background: var(--accent-soft); overflow: hidden; max-width: 180px; }
+.clear-done { flex: none; margin-left: auto; font-size: 15px; color: var(--accent-strong); font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 2px solid var(--accent-soft); background: var(--paper); white-space: nowrap; }
+.clear-done:active { background: var(--accent-soft); }
 .bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 6px; transition: width .4s; }
 
 .list { list-style: none; margin: 0; padding: 0; }
@@ -257,7 +259,7 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
         <h1 class="title" id="pageTitle">할 일 목록</h1>
         <button class="title-edit-btn" id="titleEditBtn" aria-label="제목 고치기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg></button>
       </div>
-      <div class="progress"><span id="progressText">할 일 0개</span><span class="bar"><i id="barFill"></i></span></div>
+      <div class="progress"><span id="progressText">할 일 0개</span><span class="bar"><i id="barFill"></i></span><button class="clear-done" id="clearDone" hidden>완료 지우기</button></div>
     </div>
     <ul class="list" id="list"></ul>
     <div class="empty" id="empty" hidden>
@@ -641,6 +643,9 @@ function applySkin() {
   document.querySelectorAll('.theme-card').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.skin === s)));
 }
 function renderHead() {
+  const cn = clearable(page());
+  $('clearDone').hidden = !cn;
+  $('clearDone').textContent = `완료 ${cn}개 지우기`;
   const visible = visibleIds().length;
   $('nbChipText').textContent = visible > 1 ? `내 수첩 ${visible}권` : '내 수첩';
   $('pageTitle').textContent = listTitle();
@@ -783,6 +788,30 @@ function startEdit(row) {
     if (e.key === 'Escape') finish(false);
   });
   input.addEventListener('blur', () => finish(true));
+}
+// What "clear completed" removes: finished sub-items, and finished top-level items that
+// have no unfinished sub-items left (so nothing still to do disappears with its parent).
+function clearable(p) {
+  let n = 0;
+  (p ? p.items : []).forEach(it => {
+    const subs = it.sub || [], left = subs.filter(s => !s.done).length;
+    if (it.done && !left) n += 1 + subs.length; else n += subs.length - left;
+  });
+  return n;
+}
+function clearDone() {
+  const key = cur(), before = clone(page()), n = clearable(before);
+  if (!n) return;
+  mutate(p => {
+    p.items = p.items.filter(it => {
+      const subs = (it.sub || []).filter(s => !s.done);
+      if (it.done && !subs.length) return false;
+      if (it.sub) it.sub = subs;
+      return true;
+    });
+  });
+  lastUndo = () => { docs[key] = before; touch(key); render(); };
+  toast(`완료한 할 일 ${n}개를 지웠어요`, true);
 }
 function removeItem(id) {
   const key = cur(), before = clone(page());
@@ -1196,6 +1225,7 @@ $('itemActions').addEventListener('click', e => {
 
 $('pageTitle').addEventListener('click', startTitleEdit);
 $('titleEditBtn').addEventListener('click', startTitleEdit);
+$('clearDone').addEventListener('click', clearDone);
 $('nbChip').addEventListener('click', () => { nbConfirm = null; renderNotebooks(); openSheet('nbSheet'); });
 $('nbList').addEventListener('click', e => {
   const del = e.target.closest('[data-nbdel]');
