@@ -17,7 +17,11 @@
 
 ## A. 홈 화면 앱 (PWA) — 추천
 
-1. `mjg-todo-pwa.zip`을 풀어 나온 파일들을 HTTPS 호스팅에 올립니다. 예:
+1. **GitHub Pages (설정됨)**: 저장소에 `.github/workflows/pages.yml`이 있어서, `main`에 `app/pwa/` 변경이 올라가면 자동으로 배포됩니다.
+   - 처음 한 번만: 저장소 **Settings → Pages → Build and deployment → Source: GitHub Actions** 선택
+   - 무료 계정은 저장소가 **공개(Public)**여야 Pages를 쓸 수 있습니다 (비공개는 GitHub Pro 등 유료 요금제 필요)
+   - 주소: `https://awevhnfio.github.io/mjg-todo/`
+   - 다른 호스팅을 쓰려면 `mjg-todo-pwa.zip`을 풀어 나온 파일들을 HTTPS 호스팅에 올립니다. 예:
    - **Netlify Drop**: https://app.netlify.com/drop 에 `pwa` 폴더를 끌어다 놓기 (가입 후 무료)
    - **GitHub Pages**: 저장소에 `pwa` 폴더 내용을 올리고 Settings → Pages 켜기
 2. 아이폰 **Safari**로 받은 주소를 엽니다. (Chrome 등 다른 브라우저는 안 됩니다.)
@@ -68,4 +72,4 @@ cd capacitor && npx cap sync ios  # 정식 앱에 반영 (Mac에서)
 - ✅ iOS 프로젝트: `npx cap add ios`로 Xcode 프로젝트 생성, 아이콘·실행 화면·Info.plist 설정
 - ❌ 이 작업 환경은 Linux라 **Xcode 빌드와 실제 아이폰 실행은 하지 못했습니다.** 처음 빌드할 때 오류가 나면 메시지를 알려 주세요.
 - ⚠️ 정식 앱 안에서 `공유 · 사진에 저장` 버튼이 안 보이면, 미리보기 이미지를 길게 눌러 저장하세요.
-- 앱 안에 넣은 **온글잎 해원 폰트**는 웹·앱 배포 시 라이선스(임베딩 허용 범위)를 꼭 확인하세요. App Store에 올릴 때는 특히 필요합니다.
+- 앱 안에 넣은 **온글잎 해원 폰트**는 웹 임베딩이 허용된 라이선스입니다(사용자 확인). App Store에 올릴 때는 앱 임베딩 조건도 함께 확인하세요.

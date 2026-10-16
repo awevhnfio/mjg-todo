@@ -1,0 +1,33 @@
+# app/pwa/ (홈 화면 앱)를 GitHub Pages에 배포합니다.
+# notebook.html을 고쳤다면 먼저 `python3 app/build_app.py`로 app/pwa/를 다시 만든 뒤 커밋하세요.
+name: Deploy PWA to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/pwa/**', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/pwa
+      - id: deployment
+        uses: actions/deploy-pages@v4

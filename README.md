@@ -12,4 +12,9 @@
 | `app/build_app.py` | `notebook.html`에서 `pwa/`·`capacitor/www/`를 다시 만드는 스크립트 |
 | `Ownglyph_haewonny-Rg.ttf` | 온글잎 해원 폰트 원본 (© VoyagerX, inc. & Haewon Lee) |
 
-> 폰트 라이선스: 온글잎 해원 폰트는 저작권자(VoyagerX)에게 권리가 있습니다. 공개 저장소나 배포에 쓰기 전에 라이선스를 확인하세요.
+> 폰트: 온글잎 해원 © VoyagerX, inc. & Haewon Lee — 웹 임베딩 허용 라이선스. 파일은 수정 없이 원본 그대로 넣었습니다.
+
+## 배포
+
+`app/pwa/`는 GitHub Actions(`.github/workflows/pages.yml`)로 GitHub Pages에 배포됩니다 → `https://awevhnfio.github.io/mjg-todo/`
+처음 한 번 **Settings → Pages → Source: GitHub Actions**를 선택해야 합니다.
