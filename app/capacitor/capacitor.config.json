@@ -1,0 +1,11 @@
+{
+  "appId": "app.mjgtodo.notebook",
+  "appName": "하고 싶은 일",
+  "webDir": "www",
+  "backgroundColor": "#FBE9EC",
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#FBE9EC",
+    "allowsLinkPreview": false
+  }
+}

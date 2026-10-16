@@ -1,0 +1,6 @@
+node_modules/
+app/capacitor/ios/App/App/public/
+app/capacitor/ios/DerivedData/
+xcuserdata/
+*.xcuserstate
+.DS_Store

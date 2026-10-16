@@ -1,0 +1,18 @@
+{
+  "name": "mjg-todo-notebook",
+  "version": "1.0.0",
+  "private": true,
+  "description": "하고 싶은 일 목록 — iOS app (Capacitor)",
+  "scripts": {
+    "build": "python3 ../build_app.py",
+    "sync": "python3 ../build_app.py && npx cap sync ios",
+    "open": "npx cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  }
+}
