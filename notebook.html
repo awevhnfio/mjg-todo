@@ -80,7 +80,7 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
 .notebook {
   position: relative; background: var(--paper); border-radius: 10px 22px 22px 10px;
   box-shadow: 0 2px 0 var(--rule), 0 14px 30px var(--shadow);
-  padding: 34px 14px 18px 58px; margin-top: 22px; touch-action: pan-y;
+  padding: 34px 6px 18px 58px; margin-top: 22px; touch-action: pan-y;
   transition: background-color .3s;
 }
 .notebook::before { content: ""; position: absolute; top: 0; bottom: 0; left: 44px; width: 2px; background: var(--margin); opacity: .7; }
@@ -122,7 +122,7 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
 .list { list-style: none; margin: 0; padding: 0; }
 .row {
   position: relative; display: flex; align-items: flex-start; gap: 10px;
-  min-height: 52px; padding: 11px 52px 9px 0; border-bottom: 2px solid var(--rule);
+  min-height: 52px; padding: 11px 0 9px 0; border-bottom: 2px solid var(--rule);
 }
 .row.sub { padding-left: 34px; min-height: 46px; padding-top: 9px; padding-bottom: 7px; }
 .row.sub::before { content: ""; position: absolute; left: 12px; top: 0; height: 24px; width: 14px; border-left: 2px dashed var(--ink-soft); border-bottom: 2px dashed var(--ink-soft); border-bottom-left-radius: 10px; opacity: .55; }
@@ -139,13 +139,14 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
 .row.done .text { color: var(--ink-soft); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--accent) 80%, transparent); text-decoration-thickness: 2px; }
 .edit { flex: 1; min-width: 0; font: inherit; font-size: 22px; color: var(--ink); background: var(--accent-soft); border: 0; border-radius: 8px; padding: 0 6px; margin: -1px 0; }
 .count { flex: none; font-size: 15px; color: var(--ink-soft); padding-top: 4px; font-variant-numeric: tabular-nums; }
-.more { flex: none; width: 30px; height: 30px; margin-top: -1px; border-radius: 50%; color: var(--ink-soft); display: grid; place-items: center; }
+.more { flex: none; width: 26px; height: 30px; margin-top: -1px; border-radius: 50%; color: var(--ink-soft); display: grid; place-items: center; }
 .more svg { width: 20px; height: 20px; }
 .more:active { background: var(--accent-soft); }
 .stk { position: absolute; right: 2px; top: 50%; width: 52px; height: 52px; margin-top: -26px; transform: translate(var(--dx, 0px), 0) rotate(var(--rot, 0deg)); filter: drop-shadow(0 2px 2px var(--shadow)); }
 .row.sub .stk { width: 44px; height: 44px; margin-top: -22px; }
 .stk img { width: 100%; height: 100%; object-fit: contain; display: block; }
-.row.done.has-more .more { visibility: hidden; }
+.row.done.has-more .more { display: none; }
+.row.done { padding-right: 48px; }
 .stk.fresh { animation: slap .45s cubic-bezier(.3, 1.6, .5, 1); }
 @keyframes slap {
   0% { transform: translate(var(--dx, 0px), -30px) rotate(calc(var(--rot, 0deg) - 40deg)) scale(1.9); opacity: 0; }
