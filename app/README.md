@@ -11,7 +11,9 @@
 | 유효 기간 | 제한 없음 | 무료 Apple ID: **7일마다 다시 설치**, 유료 개발자($99/년): 1년, TestFlight/App Store 배포 가능 |
 | 파일 | `mjg-todo-pwa.zip` (`pwa/`) | `mjg-todo-ios-project.zip` (`capacitor/`) |
 
-> 둘 다 데이터는 **그 아이폰 안에만** 저장됩니다(localStorage). Claude 앱에서 쓰던 목록과는 이어지지 않고, 기기 간 동기화도 안 됩니다.
+> 둘 다 데이터는 **그 아이폰 안에만** 저장됩니다. Claude 앱에서 쓰던 목록과는 이어지지 않고, 기기 간 동기화도 안 됩니다. 정식 앱은 localStorage에 더해 앱 전용 파일(`Library/mjg-todo.json`)에도 저장해서, iOS가 웹 저장소를 비워도 목록이 남습니다.
+>
+> **App Store 출시**는 [`store/README.md`](store/README.md)를 보세요.
 
 ---
 
@@ -34,7 +36,9 @@
 
 ## B. 정식 iOS 앱 (Capacitor + Xcode)
 
-준비: Mac, Xcode 16 이상, Node.js 20 이상, Apple ID(Xcode → Settings → Accounts에 로그인)
+준비: Mac, 최신 Xcode, Node.js 20 이상, Apple ID(Xcode → Settings → Accounts에 로그인)
+
+쓰는 플러그인: `@capacitor/filesystem`(앱 전용 파일 저장), `@capacitor/share`(이미지 공유·사진 저장). `npm install` 뒤 `npx cap sync ios`를 하면 Swift Package로 연결됩니다.
 
 ```bash
 unzip mjg-todo-ios-project.zip -d mjg-todo-ios

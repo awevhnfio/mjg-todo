@@ -145,6 +145,7 @@
 - 저장 방법:
   - Claude 안: `downloads` 기능의 `이미지 저장` 버튼 (iOS 앱에서는 공유 시트)
   - Safari 독립 실행: `navigator.share`로 공유 → 사진에 저장
+  - 정식 iOS 앱(Capacitor): PNG를 앱 캐시 폴더에 쓴 뒤 `Share` 플러그인으로 iOS 공유 시트를 연다 → 사진에 저장
   - 공통: 미리보기 이미지를 길게 눌러 저장
 
 ---
@@ -334,3 +335,12 @@
 - Safari 독립 실행은 `localStorage`만 쓴다. 사파리 방문 기록을 지우면 데이터도 사라지고, 기기 간 동기화가 안 된다.
 - 독립 실행본에는 오프라인 캐시(서비스 워커)와 앱 아이콘(manifest)이 없다.
 - 실제 아이폰(Claude iOS 앱, Safari)에서는 아직 시험하지 않았다. 지금까지는 헤드리스 Chromium 390px 화면에서만 확인했다.
+
+---
+
+## 정식 iOS 앱(Capacitor) 전용 동작
+- 저장: localStorage에 더해 `Filesystem` 플러그인으로 `Library/mjg-todo.json`에 `{ at, docs }`를 0.3초 늦춰 쓴다. 앱이 백그라운드로 갈 때는 바로 쓴다.
+  - iOS가 저장 공간이 부족할 때 웹뷰의 localStorage를 지울 수 있어서 둔 사본이다.
+  - 실행할 때 파일을 읽어, localStorage가 비었거나 파일 쪽 `at`이 더 최근이면 파일 내용으로 되돌린다.
+- 하단 저장 위치 문구: `이 아이폰에 저장돼요`
+- 네트워크: 앱 빌드에서는 Google Fonts(Gaegu) 링크를 빼서 외부 요청이 없다. 손글씨는 앱에 넣은 온글잎 해원 폰트로 그린다.

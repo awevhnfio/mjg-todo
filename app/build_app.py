@@ -92,9 +92,17 @@ PWA.mkdir(exist_ok=True)
 (PWA / 'manifest.webmanifest').write_text(manifest, encoding='utf-8')
 (PWA / 'sw.js').write_text(sw, encoding='utf-8')
 
+# Public pages for the App Store listing (privacy policy, support), served next to the PWA.
+for page in sorted((HERE / 'pages').glob('*.html')):
+    shutil.copy(page, PWA / page.name)
+
 if WWW.parent.exists():
     if WWW.exists(): shutil.rmtree(WWW)
-    shutil.copytree(PWA, WWW)
+    shutil.copytree(PWA, WWW, ignore=shutil.ignore_patterns('privacy.html', 'support.html', 'sw.js'))
+    # The iOS app makes no network requests: drop the Google Fonts fallback (the main font is embedded).
+    app_html = (WWW / 'index.html').read_text(encoding='utf-8')
+    app_html = '\n'.join(l for l in app_html.split('\n') if not ('<link' in l and 'fonts.g' in l))
+    (WWW / 'index.html').write_text(app_html, encoding='utf-8')
 
 with zipfile.ZipFile(HERE / 'mjg-todo-pwa.zip', 'w', zipfile.ZIP_DEFLATED) as z:
     for f in sorted(PWA.rglob('*')):

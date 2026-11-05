@@ -495,8 +495,46 @@ let draft = null; // { parent: id|null, after: id|null } while writing a new ite
 let sheetItemId = null, lastUndo = null, toastTimer = null;
 
 function saveLocal() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(docs)); } catch (e) { /* storage full or blocked */ }
+  try { localStorage.setItem(LS_KEY, JSON.stringify(docs)); localStorage.setItem(LS_KEY + '-at', String(Date.now())); } catch (e) { /* storage full or blocked */ }
+  saveNativeSoon();
 }
+
+/* ---------- iOS app (Capacitor): keep a copy in the app's own files ----------
+   iOS may clear a web view's localStorage when space runs low, so the native app
+   also writes everything to Library/mjg-todo.json and reads it back on launch. */
+const CAP = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform() ? window.Capacitor.Plugins : null;
+const FS = CAP && CAP.Filesystem, SHARE = CAP && CAP.Share;
+const NATIVE_FILE = 'mjg-todo.json';
+let nativeTimer = null, nativeReady = false;
+function saveNativeSoon() {
+  if (!FS || !nativeReady) return;
+  clearTimeout(nativeTimer);
+  nativeTimer = setTimeout(saveNative, 300);
+}
+async function saveNative() {
+  if (!FS) return;
+  clearTimeout(nativeTimer); nativeTimer = null;
+  try { await FS.writeFile({ path: NATIVE_FILE, directory: 'LIBRARY', encoding: 'utf8', data: JSON.stringify({ at: Date.now(), docs }) }); }
+  catch (e) { /* keep localStorage copy */ }
+}
+async function loadNative() {
+  if (!FS) return;
+  try {
+    const r = await FS.readFile({ path: NATIVE_FILE, directory: 'LIBRARY', encoding: 'utf8' });
+    const saved = JSON.parse(r.data);
+    let lsAt = 0; try { lsAt = +localStorage.getItem(LS_KEY + '-at') || 0; } catch (e) {}
+    // the file wins when the web storage was wiped or is older
+    if (saved && saved.docs && (!Object.keys(docs).length || saved.at > lsAt)) {
+      docs = saved.docs;
+      for (const k of Object.keys(docs)) if (docs[k] == null) delete docs[k];
+      try { localStorage.setItem(LS_KEY, JSON.stringify(docs)); localStorage.setItem(LS_KEY + '-at', String(saved.at)); } catch (e) {}
+      migrate(); render();
+    }
+  } catch (e) { /* first launch: no file yet */ }
+  nativeReady = true;
+  saveNative();
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden && nativeTimer) saveNative(); });
 function touch(id) {
   dirty.add(id); saveLocal();
   clearTimeout(timers[id]);
@@ -558,7 +596,7 @@ async function connect() {
   } catch (e) { mode = 'local'; setSync(); }
 }
 function setSync() {
-  $('sync').textContent = mode === 'db' ? '내 계정에 저장돼요 · 다른 기기에서도 이어 쓰기' : '이 기기(브라우저)에 저장돼요';
+  $('sync').textContent = mode === 'db' ? '내 계정에 저장돼요 · 다른 기기에서도 이어 쓰기' : FS ? '이 아이폰에 저장돼요' : '이 기기(브라우저)에 저장돼요';
 }
 
 /* ---------- helpers ---------- */
@@ -1461,7 +1499,15 @@ async function exportImage() {
   save.hidden = true; save.onclick = null;
   let dl = null;
   try { dl = window.claude && window.claude.use ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
-  if (dl) {
+  if (FS && SHARE) {
+    save.hidden = false; save.textContent = '공유 · 사진에 저장';
+    save.onclick = async () => {
+      try {
+        const w = await FS.writeFile({ path: fname, directory: 'CACHE', data: dataUrl.split(',')[1] });
+        await SHARE.share({ files: [w.uri] });
+      } catch (e) { if (!/cancel/i.test(String(e && (e.message || e)))) toast('공유하지 못했어요. 이미지를 길게 눌러 저장해 주세요.'); }
+    };
+  } else if (dl) {
     save.hidden = false;
     save.onclick = async () => {
       try { await dl.save({ filename: fname, data: blob }); toast('저장했어요'); }
@@ -1592,7 +1638,7 @@ $('sampleBtn').addEventListener('click', () => {
   toast('예시를 채웠어요. 마음대로 고치거나 지워 보세요');
 });
 
-migrate(); render(); setSync(); connect();
+migrate(); render(); setSync(); connect(); loadNative();
 })();
 </script>
 

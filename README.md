@@ -9,6 +9,8 @@
 | `app/` | 아이폰 앱 패키지 — 설치 방법은 [`app/README.md`](app/README.md) |
 | `app/pwa/` | 홈 화면 앱(PWA). HTTPS로 호스팅 후 Safari → 홈 화면에 추가 |
 | `app/capacitor/` | Xcode용 iOS 앱 프로젝트 (Capacitor 8) |
+| `app/store/` | App Store 출시 안내, 스토어 입력 문구, 스크린샷 |
+| `app/pages/` | 개인정보 처리방침·지원 페이지 원본 (빌드 시 `app/pwa/`로 복사되어 Pages에 게시) |
 | `app/build_app.py` | `notebook.html`에서 `pwa/`·`capacitor/www/`를 다시 만드는 스크립트 |
 | `Ownglyph_haewonny-Rg.ttf` | 온글잎 해원 폰트 원본 (© VoyagerX, inc. & Haewon Lee) |
 
