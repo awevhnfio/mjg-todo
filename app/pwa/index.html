@@ -325,7 +325,7 @@ button:focus-visible, input:focus-visible, label:focus-within { outline: 2.5px d
   <div class="sheet-inner">
     <div class="grip"></div>
     <h2>스티커 북<span class="sp"></span><button class="small-btn" id="editStickers">정리하기</button></h2>
-    <p class="hint">완료할 때 붙일 스티커를 골라요. 랜덤이면 매번 다른 스티커가 붙어요.</p>
+    <p class="hint">완료할 때 붙일 스티커를 골라요. 랜덤이면 매번 다른 스티커가 붙어요. 내 스티커가 있으면 내 스티커 중에서만 골라요.</p>
     <div class="grid" id="builtinGrid"></div>
     <div class="section-label">내 스티커</div>
     <div class="grid" id="customGrid"></div>
@@ -643,11 +643,16 @@ function stickerSrc(ref) {
   if (ref && ref.startsWith('b:') && BUILTIN_MAP[ref.slice(2)]) return BUILTIN_MAP[ref.slice(2)].uri;
   return BUILTIN_MAP.star.uri;
 }
-function allRefs() { return BUILTIN.map(b => 'b:' + b.id).concat(customStickers().map(c => 'c:' + c.id)); }
+// Random draws only from my stickers once I have any; built-ins are the fallback.
+function randomRef() {
+  const cs = customStickers().map(c => 'c:' + c.id);
+  const refs = cs.length ? cs : BUILTIN.map(b => 'b:' + b.id);
+  return refs[Math.floor(Math.random() * refs.length)];
+}
 function pickSticker() {
   const sel = settings().sel;
   if (sel && sel !== 'random' && (sel.startsWith('b:') ? BUILTIN_MAP[sel.slice(2)] : docs[sel.slice(2)])) return sel;
-  const refs = allRefs(); return refs[Math.floor(Math.random() * refs.length)];
+  return randomRef();
 }
 function validRef(ref) { return !!ref && (ref.startsWith('b:') ? !!BUILTIN_MAP[ref.slice(2)] : !!(docs[ref.slice(2)] && docs[ref.slice(2)].src)); }
 function recentStickers() {
@@ -833,7 +838,7 @@ function toggle(id) {
 // Put a chosen sticker on an item (done or not) — from the long-press picker.
 function stickWith(id, ref) {
   if (hideDoneOn()) lingering.add(id);
-  const real = ref === 'random' ? (() => { const a = allRefs(); return a[Math.floor(Math.random() * a.length)]; })() : ref;
+  const real = ref === 'random' ? randomRef() : ref;
   mutate(p => { const l = locate(p, id); if (l) { stickOn(l.item, real); freshId = id; } });
   noteRecent(real);
   afterStick(id);
